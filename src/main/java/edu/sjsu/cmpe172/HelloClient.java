@@ -41,7 +41,8 @@ public class HelloClient {
         if (args[0].equals("list")) {
             try {
                 int page = 0;
-                while (true) {
+                int maxPages = 1000;
+                while (page < maxPages) {
                     String url = baseUrl + "/posts?page=" + page;
                     Map response = restTemplate.getForObject(url, Map.class);
 
@@ -58,7 +59,7 @@ public class HelloClient {
                     }
 
                     Boolean isLast = (Boolean) response.get("last");
-                    if (isLast) {
+                    if (isLast == null || isLast) {
                         break;
                     }
                     page++;
