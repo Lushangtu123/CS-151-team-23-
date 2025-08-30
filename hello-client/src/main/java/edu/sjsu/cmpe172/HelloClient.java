@@ -76,6 +76,13 @@ public class HelloClient {
                 return;
             }
 
+            // Check for empty or whitespace-only message
+            String messageToPost = args[1].trim();
+            if (messageToPost.isEmpty()) {
+                System.out.println("Cannot post an empty message!");
+                return;
+            }
+
             try {
                 String url = baseUrl + "/posts";
                 Map<String, String> requestBody = new HashMap<>();
