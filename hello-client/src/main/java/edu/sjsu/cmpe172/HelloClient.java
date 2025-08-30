@@ -83,14 +83,27 @@ public class HelloClient {
                 return;
             }
 
+
             try {
                 String url = baseUrl + "/posts";
                 Map<String, String> requestBody = new HashMap<>();
                 requestBody.put("author", author);
-                requestBody.put("message", args[1]);
+                requestBody.put("message", messageToPost);
                 requestBody.put("token", token);
 
                 Map response = restTemplate.postForObject(url, requestBody, Map.class);
+
+                // Check if response is null
+                if (response == null) {
+                    System.out.println("No response from server");
+                    return;
+                }
+
+                // Check if response has required fields
+                if (response.get("id") == null || response.get("message") == null || response.get("author") == null) {
+                    System.out.println("Invalid response from server");
+                    return;
+                }
 
                 Long id = Long.valueOf(response.get("id").toString());
                 String text = (String) response.get("message");
