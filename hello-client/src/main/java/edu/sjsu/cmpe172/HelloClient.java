@@ -16,8 +16,8 @@ public class HelloClient {
 
         // Check if we have the right arguments
         if (args.length == 0) {
-            System.out.println("Usage: java -jar helloClient.jar list");
-            System.out.println("Usage: java -jar helloClient.jar post <message>");
+            System.out.println("USAGE: java -jar helloClient.jar list");
+            System.out.println("USAGE: java -jar helloClient.jar post <message>");
             return;
         }
 
@@ -72,38 +72,18 @@ public class HelloClient {
         // Handle post command
         else if (args[0].equals("post")) {
             if (args.length < 2) {
-                System.out.println("Usage: java -jar helloClient.jar post <message>");
+                System.out.println("USAGE: java -jar helloClient.jar post <message>");
                 return;
             }
-
-            // Check for empty or whitespace-only message
-            String messageToPost = args[1].trim();
-            if (messageToPost.isEmpty()) {
-                System.out.println("Cannot post an empty message!");
-                return;
-            }
-
 
             try {
                 String url = baseUrl + "/posts";
                 Map<String, String> requestBody = new HashMap<>();
                 requestBody.put("author", author);
-                requestBody.put("message", messageToPost);
+                requestBody.put("message", args[1]);
                 requestBody.put("token", token);
 
                 Map response = restTemplate.postForObject(url, requestBody, Map.class);
-
-                // Check if response is null
-                if (response == null) {
-                    System.out.println("No response from server");
-                    return;
-                }
-
-                // Check if response has required fields
-                if (response.get("id") == null || response.get("message") == null || response.get("author") == null) {
-                    System.out.println("Invalid response from server");
-                    return;
-                }
 
                 Long id = Long.valueOf(response.get("id").toString());
                 String text = (String) response.get("message");
@@ -121,8 +101,8 @@ public class HelloClient {
 
         // Handle invalid command
         else {
-            System.out.println("Usage: java -jar helloClient.jar list");
-            System.out.println("Usage: java -jar helloClient.jar post <message>");
+            System.out.println("USAGE: java -jar helloClient.jar list");
+            System.out.println("USAGE: java -jar helloClient.jar post <message>");
         }
     }
 }
