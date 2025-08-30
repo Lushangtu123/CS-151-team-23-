@@ -1,4 +1,4 @@
-package package edu.sjsu.cmpe172;
+package edu.sjsu.cmpe172;
 
 import org.springframework.web.client.RestTemplate;
 import java.io.FileInputStream;
@@ -96,7 +96,6 @@ public class HelloClient {
 
             } catch (Exception e) {
                 System.out.println(e.getMessage());
-                System.out.println("Usage: java -jar helloClient.jar post <message>");
             }
         }
 
