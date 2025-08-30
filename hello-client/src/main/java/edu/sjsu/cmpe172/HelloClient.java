@@ -1,4 +1,4 @@
-package edu.sjsu.cmpe172;
+package package edu.sjsu.cmpe172;
 
 import org.springframework.web.client.RestTemplate;
 import java.io.FileInputStream;
@@ -16,8 +16,8 @@ public class HelloClient {
 
         // Check if we have the right arguments
         if (args.length == 0) {
-            System.out.println("USAGE: java -jar helloClient.jar list");
-            System.out.println("USAGE: java -jar helloClient.jar post <message>");
+            System.out.println("Usage: java -jar helloClient.jar list");
+            System.out.println("Usage: java -jar helloClient.jar post <message>");
             return;
         }
 
@@ -72,7 +72,7 @@ public class HelloClient {
         // Handle post command
         else if (args[0].equals("post")) {
             if (args.length < 2) {
-                System.out.println("USAGE: java -jar helloClient.jar post <message>");
+                System.out.println("Usage: java -jar helloClient.jar post <message>");
                 return;
             }
 
@@ -96,13 +96,14 @@ public class HelloClient {
 
             } catch (Exception e) {
                 System.out.println(e.getMessage());
+                System.out.println("Usage: java -jar helloClient.jar post <message>");
             }
         }
 
         // Handle invalid command
         else {
-            System.out.println("USAGE: java -jar helloClient.jar list");
-            System.out.println("USAGE: java -jar helloClient.jar post <message>");
+            System.out.println("Usage: java -jar helloClient.jar list");
+            System.out.println("Usage: java -jar helloClient.jar post <message>");
         }
     }
 }
