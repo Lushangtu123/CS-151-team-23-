@@ -37,8 +37,14 @@ public class HelloClient {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        // Handle list command
+        // Handle list command - must have exactly 1 argument
         if (args[0].equals("list")) {
+            if (args.length != 1) {
+                System.out.println("Usage: java -jar helloClient.jar list");
+                System.out.println("Usage: java -jar helloClient.jar post <message>");
+                return;
+            }
+
             try {
                 int page = 0;
                 int maxPages = 1000;
@@ -46,24 +52,11 @@ public class HelloClient {
                     String url = baseUrl + "/posts?page=" + page;
                     Map response = restTemplate.getForObject(url, Map.class);
 
-                    if (response == null || !response.containsKey("content")) {
-                        System.out.println("Invalid response from server.");
-                        break;
-                    }
-
                     List<Map> messages = (List<Map>) response.get("content");
                     for (Map message : messages) {
-                        if (message == null) continue;
-
-                        Object idObj = message.get("id");
-                        Object textObj = message.get("message");
-                        Object authorObj = message.get("author");
-
-                        if (idObj == null || textObj == null || authorObj == null) continue;
-
-                        Long id = Long.valueOf(idObj.toString());
-                        String text = textObj.toString();
-                        String messageAuthor = authorObj.toString();
+                        Long id = Long.valueOf(message.get("id").toString());
+                        String text = (String) message.get("message");
+                        String messageAuthor = (String) message.get("author");
 
                         ZoneId zone = ZoneId.systemDefault();
                         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -71,12 +64,8 @@ public class HelloClient {
                         System.out.printf("%s %s said %s%n", zdt.format(dtf), messageAuthor, text);
                     }
 
-                    // Safe boolean parsing
-                    Object lastObj = response.get("last");
-                    if (lastObj != null) {
-                        boolean isLast = Boolean.parseBoolean(lastObj.toString());
-                        if (isLast) break;
-                    } else {
+                    Boolean isLast = (Boolean) response.get("last");
+                    if (isLast == null || isLast) {
                         break;
                     }
                     page++;
@@ -86,47 +75,26 @@ public class HelloClient {
             }
         }
 
-        // Handle post command
+        // Handle post command - must have exactly 2 arguments
         else if (args[0].equals("post")) {
-            if (args.length < 2) {
+            if (args.length != 2) {
+                System.out.println("Usage: java -jar helloClient.jar list");
                 System.out.println("Usage: java -jar helloClient.jar post <message>");
                 return;
             }
 
             try {
-                // Combine all arguments after "post" into a single message
-                StringBuilder messageBuilder = new StringBuilder();
-                for (int i = 1; i < args.length; i++) {
-                    if (i > 1) messageBuilder.append(" ");
-                    messageBuilder.append(args[i]);
-                }
-                String fullMessage = messageBuilder.toString();
-
                 String url = baseUrl + "/posts";
                 Map<String, String> requestBody = new HashMap<>();
                 requestBody.put("author", author);
-                requestBody.put("message", fullMessage);
+                requestBody.put("message", args[1]);
                 requestBody.put("token", token);
 
                 Map response = restTemplate.postForObject(url, requestBody, Map.class);
 
-                if (response == null) {
-                    System.out.println("No response from server.");
-                    return;
-                }
-
-                Object idObj = response.get("id");
-                Object textObj = response.get("message");
-                Object authorObj = response.get("author");
-
-                if (idObj == null || textObj == null || authorObj == null) {
-                    System.out.println("Invalid response format from server.");
-                    return;
-                }
-
-                Long id = Long.valueOf(idObj.toString());
-                String text = textObj.toString();
-                String responseAuthor = authorObj.toString();
+                Long id = Long.valueOf(response.get("id").toString());
+                String text = (String) response.get("message");
+                String responseAuthor = (String) response.get("author");
 
                 ZoneId zone = ZoneId.systemDefault();
                 DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
