@@ -31,9 +31,23 @@ public class HelloClient {
             return;
         }
 
+        // Get configuration properties and validate
         String baseUrl = config.getProperty("baseUrl");
         String token = config.getProperty("token");
         String author = config.getProperty("author");
+
+        // Trim whitespace if properties exist
+        if (baseUrl != null) baseUrl = baseUrl.trim();
+        if (token != null) token = token.trim();
+        if (author != null) author = author.trim();
+
+        // Validate required properties
+        if (baseUrl == null || baseUrl.isEmpty() ||
+                token == null || token.isEmpty() ||
+                author == null || author.isEmpty()) {
+            System.out.println("Missing required configuration properties (baseUrl, token, author)");
+            return;
+        }
 
         RestTemplate restTemplate = new RestTemplate();
 
@@ -46,16 +60,23 @@ public class HelloClient {
                     String url = baseUrl + "/posts?page=" + page;
                     Map response = restTemplate.getForObject(url, Map.class);
 
-                    List<Map> messages = (List<Map>) response.get("content");
-                    for (Map message : messages) {
-                        Long id = Long.valueOf(message.get("id").toString());
-                        String text = (String) message.get("message");
-                        String messageAuthor = (String) message.get("author");
+                    if (response == null) {
+                        System.out.println("No response received from server");
+                        break;
+                    }
 
-                        ZoneId zone = ZoneId.systemDefault();
-                        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                        var zdt = Instant.ofEpochMilli(id).atZone(zone);
-                        System.out.printf("%s %s said %s%n", zdt.format(dtf), messageAuthor, text);
+                    List<Map> messages = (List<Map>) response.get("content");
+                    if (messages != null) {
+                        for (Map message : messages) {
+                            if (message.get("id") != null && message.get("message") != null && message.get("author") != null) {
+                                Long id = Long.valueOf(message.get("id").toString());
+                                String text = (String) message.get("message");
+                                String messageAuthor = (String) message.get("author");
+
+                                String formattedMessage = formatMessage(id, messageAuthor, text);
+                                System.out.println(formattedMessage);
+                            }
+                        }
                     }
 
                     Boolean isLast = (Boolean) response.get("last");
@@ -85,14 +106,18 @@ public class HelloClient {
 
                 Map response = restTemplate.postForObject(url, requestBody, Map.class);
 
-                Long id = Long.valueOf(response.get("id").toString());
-                String text = (String) response.get("message");
-                String responseAuthor = (String) response.get("author");
+                if (response != null && response.get("id") != null &&
+                        response.get("message") != null && response.get("author") != null) {
 
-                ZoneId zone = ZoneId.systemDefault();
-                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                var zdt = Instant.ofEpochMilli(id).atZone(zone);
-                System.out.printf("%s %s said %s%n", zdt.format(dtf), responseAuthor, text);
+                    Long id = Long.valueOf(response.get("id").toString());
+                    String text = (String) response.get("message");
+                    String responseAuthor = (String) response.get("author");
+
+                    String formattedMessage = formatMessage(id, responseAuthor, text);
+                    System.out.println(formattedMessage);
+                } else {
+                    System.out.println("Invalid response received from server");
+                }
 
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -104,5 +129,15 @@ public class HelloClient {
             System.out.println("Usage: java -jar helloClient.jar list");
             System.out.println("Usage: java -jar helloClient.jar post <message>");
         }
+    }
+
+    /**
+     * Helper method to format message output consistently
+     */
+    private static String formatMessage(Long id, String author, String message) {
+        ZoneId zone = ZoneId.systemDefault();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        var zdt = Instant.ofEpochMilli(id).atZone(zone);
+        return String.format("%s %s said %s", zdt.format(dtf), author, message);
     }
 }
