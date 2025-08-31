@@ -13,12 +13,15 @@ import java.util.Properties;
 public class HelloClient {
 
     public static void main(String[] args) {
+
+        // Check if we have the right arguments
         if (args.length == 0) {
             System.out.println("Usage: java -jar helloClient.jar list");
             System.out.println("Usage: java -jar helloClient.jar post <message>");
             return;
         }
 
+        // Load the config file
         Properties config = new Properties();
         String configFile = System.getProperty("user.home") + "/.config/cmpe172hello.properties";
         try {
@@ -34,17 +37,14 @@ public class HelloClient {
 
         RestTemplate restTemplate = new RestTemplate();
 
+        // Handle list command
         if (args[0].equals("list")) {
             try {
                 int page = 0;
-                while (true) {
+                int maxPages = 1000;
+                while (page < maxPages) {
                     String url = baseUrl + "/posts?page=" + page;
                     Map response = restTemplate.getForObject(url, Map.class);
-
-                    if (response == null || !response.containsKey("content")) {
-                        System.out.println("Invalid response from server.");
-                        break;
-                    }
 
                     List<Map> messages = (List<Map>) response.get("content");
                     for (Map message : messages) {
@@ -58,10 +58,10 @@ public class HelloClient {
                         System.out.printf("%s %s said %s%n", zdt.format(dtf), messageAuthor, text);
                     }
 
-                    String lastStr = response.get("last").toString();
-                    boolean isLast = Boolean.parseBoolean(lastStr);
-                    if (isLast) break;
-
+                    Boolean isLast = (Boolean) response.get("last");
+                    if (isLast == null || isLast) {
+                        break;
+                    }
                     page++;
                 }
             } catch (Exception e) {
@@ -69,8 +69,10 @@ public class HelloClient {
             }
         }
 
+        // Handle post command
         else if (args[0].equals("post")) {
             if (args.length < 2) {
+                System.out.println("Usage: java -jar helloClient.jar list");
                 System.out.println("Usage: java -jar helloClient.jar post <message>");
                 return;
             }
@@ -83,11 +85,6 @@ public class HelloClient {
                 requestBody.put("token", token);
 
                 Map response = restTemplate.postForObject(url, requestBody, Map.class);
-
-                if (response == null) {
-                    System.out.println("No response from server.");
-                    return;
-                }
 
                 Long id = Long.valueOf(response.get("id").toString());
                 String text = (String) response.get("message");
@@ -103,6 +100,7 @@ public class HelloClient {
             }
         }
 
+        // Handle invalid command
         else {
             System.out.println("Usage: java -jar helloClient.jar list");
             System.out.println("Usage: java -jar helloClient.jar post <message>");
