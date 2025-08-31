@@ -37,8 +37,13 @@ public class HelloClient {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        // Handle list command
+        // Handle list command - should have exactly 1 argument
         if (args[0].equals("list")) {
+            if (args.length != 1) {
+                System.out.println("Usage: java -jar helloClient.jar list");
+                return;
+            }
+
             try {
                 int page = 0;
                 int maxPages = 1000;
@@ -69,10 +74,16 @@ public class HelloClient {
             }
         }
 
-        // Handle post command
+        // Handle post command - should have exactly 2 arguments
         else if (args[0].equals("post")) {
-            if (args.length < 2) {
-                System.out.println("Usage: java -jar helloClient.jar list");
+            if (args.length != 2) {
+                System.out.println("Usage: java -jar helloClient.jar post <message>");
+                return;
+            }
+
+            // Check for empty or whitespace-only message
+            String messageToPost = args[1].trim();
+            if (messageToPost.isEmpty()) {
                 System.out.println("Usage: java -jar helloClient.jar post <message>");
                 return;
             }
@@ -81,7 +92,7 @@ public class HelloClient {
                 String url = baseUrl + "/posts";
                 Map<String, String> requestBody = new HashMap<>();
                 requestBody.put("author", author);
-                requestBody.put("message", args[1]);
+                requestBody.put("message", args[1]); // Use original message (with spaces if any)
                 requestBody.put("token", token);
 
                 Map response = restTemplate.postForObject(url, requestBody, Map.class);
@@ -97,6 +108,7 @@ public class HelloClient {
 
             } catch (Exception e) {
                 System.out.println(e.getMessage());
+                System.out.println("Usage: java -jar helloClient.jar post <message>");
             }
         }
 
