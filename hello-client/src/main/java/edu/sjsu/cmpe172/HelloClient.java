@@ -106,7 +106,7 @@ public class HelloClient {
             }
         }
 
-        // Handle invalid command
+        // Handle invalid command (Must have two output message)
         else {
             System.out.println("Usage: java -jar helloClient.jar list");
             System.out.println("Usage: java -jar helloClient.jar post <message>");
